@@ -15,6 +15,7 @@
   "author": "sem_eleven",
   "license": "ISC",
   "dependencies": {
+    "@simplewebauthn/server": "^0.10.3",
     "bcrypt": "^5.0.0",
     "compression": "^1.7.4",
     "ejs": "^3.1.5",
