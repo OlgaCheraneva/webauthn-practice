@@ -24,9 +24,8 @@ const users = new Users();
 initializePassport(
   passport,
   (id) => users.getById(id),
-  async ( user, options, expectedChallenge) => {
-    
-
+  (id) => users.getByCredentialID(id),
+  async (user, options, expectedChallenge) => {
     const authenticator = user.devices.find(
       (device) => device.credentialID === options.id
     );
@@ -208,17 +207,22 @@ app.post("/key/verify", checkAuthenticated, async (req, res) => {
   }
 });
 
-// Passwordless
+// Loginless
 app.post("/signup/challenge", checkNotAuthenticated, (req, res) => {
-  const { email, name } = req.body;
+  const { name } = req.body;
 
-  const user = users.createUser({ name, email });
+  const user = users.createUser({ name });
+
   const optionsForOptions = {
     rpName,
     rpID,
     userName: user.name,
     userID: user.id,
     attestationType: "none",
+    authenticatorSelection: {
+      requireResidentKey: true,
+      userVerification: "required",
+    },
   };
 
   const options = generateAttestationOptions(optionsForOptions);
@@ -271,20 +275,12 @@ app.post("/signup", checkNotAuthenticated, async (req, res) => {
 });
 
 app.post("/signin/challenge", checkNotAuthenticated, (req, res) => {
-  const user = users.getByEmail(req.body.email);
-
-  const allowCredentials = user.devices.map((dev) => ({
-    id: dev.credentialID,
-    type: "public-key",
-  }));
-
   const options = generateAssertionOptions({
-    allowCredentials,
+    rpID,
     userVerification: "required",
   });
 
   req.session.challenge = options.challenge;
-  req.session.userId = user.id;
 
   res.json({ options });
 });

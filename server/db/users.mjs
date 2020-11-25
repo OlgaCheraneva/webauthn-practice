@@ -19,7 +19,12 @@ export class Users {
   createUser(user) {
     const id = this.createUserId();
 
-    return { ...user, id, devices: [] };
+    return {
+      ...user,
+      id,
+      devices: [],
+      name: user.name || "User " + (this.db.size + 1),
+    };
   }
   add(user) {
     const newUser = user.id ? user : this.createUser(user);
@@ -31,11 +36,11 @@ export class Users {
   getById(id) {
     return this.db.get(id);
   }
-  getByEmail(email) {
+  getByCredentialID(id) {
     const mapIter = this.db.values();
 
     for (let user of mapIter) {
-      if (user.email === email) {
+      if (user.devices.find(device => device.credentialID === id)) {
         return user;
       }
     }
